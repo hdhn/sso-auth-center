@@ -13,6 +13,7 @@
         <el-input
             v-model="loginForm.password"
             type="password"
+            show-password
             auto-complete="off" placeholder="密码" @keyup.enter.native="handleLogin">
           <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon"/>
         </el-input>
@@ -47,8 +48,6 @@
     </el-form>
     <!--  底部  -->
     <div class="el-login-footer">
-      <span>Copyright ( @程序员小强 ） All Rights Reserved. 博客: <a href="https://blog.csdn.net/qq_38011415"
-                                                         target="_blank" style="color:#20a0ff;">传送门</a></span>
     </div>
   </div>
 </template>
@@ -70,7 +69,7 @@ export default {
       }
     }
     return {
-      title: '小强统一认证中心',
+      title: '浙江担保统一认证中心',
       captchaImageUrl: '',
       loginForm: {
         requestId: '',

@@ -24,13 +24,13 @@ export default {
   },
   data() {
     return {
-      title: '小强认证中心',
+      title: '浙江担保统一认证中心',
       logo: require('@/assets/logo/logo.png')
     }
   },
   methods: {
     clickLogo() {
-      window.open("https://blog.csdn.net/qq_38011415", "_blank");
+      // window.open("https://blog.csdn.net/qq_38011415", "_blank");
       //点击logo 跳转到首页 this.$router.push("/")
     }
   }

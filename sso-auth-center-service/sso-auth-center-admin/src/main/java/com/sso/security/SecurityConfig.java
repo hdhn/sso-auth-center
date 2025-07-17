@@ -7,6 +7,7 @@ package com.sso.security;
 import com.sso.security.filter.TokenAuthenticationFilter;
 import com.sso.security.handle.AuthenticationEntryPointImpl;
 import com.sso.security.handle.LogoutSuccessHandlerImpl;
+import com.sso.service.admin.login.UserAccountAuthServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
@@ -16,12 +17,12 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.filter.CorsFilter;
-
 import javax.annotation.Resource;
 
 /**
@@ -57,6 +58,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	 */
 	@Autowired
 	private CorsFilter corsFilter;
+
+	@Autowired
+	private CustomLdapUserDetailsMapper customLdapUserDetailsMapper;
 
 	/**
 	 * 解决 无法直接注入 AuthenticationManager
@@ -142,6 +146,32 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	 */
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder());
+		auth
+			.ldapAuthentication()
+				.userSearchBase("ou=浙江担保")
+				.userSearchFilter("(&(objectClass=inetOrgPerson)(uid={0}))")
+				.contextSource()
+					.url("ldap://120.26.2.7:390/dc=zjsdbjt")
+					.managerDn("uid=root,cn=users,dc=zjsdbjt")
+					.managerPassword("zjsdbjt@123")
+				.and()
+				// 配置密码比较策略
+				.passwordCompare()
+					.passwordAttribute("userPassword")
+					.passwordEncoder(new LdapMd5PasswordEncoder())
+				.and()
+				// 配置用户详情映射
+				.userDetailsContextMapper(customLdapUserDetailsMapper);
+
+		// 配置数据库认证
+		auth.userDetailsService(userDetailsService)
+			.passwordEncoder(bCryptPasswordEncoder());
+	}
+
+	@Bean
+	public SimpleAuthorityMapper simpleAuthorityMapper() {
+		SimpleAuthorityMapper mapper = new SimpleAuthorityMapper();
+		mapper.setConvertToUpperCase(true);
+		return mapper;
 	}
 }

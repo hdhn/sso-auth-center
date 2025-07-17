@@ -40,6 +40,7 @@ public class UserAccountAuthServiceImpl implements UserDetailsService {
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		log.info("调用UserDetailsServiceImpl.loadUserByUsername");
 		SsoUser user = ssoUserMapper.getByUserName(username);
 		if (null == user) {
 			log.info("登录用户：{} 不存在.", username);

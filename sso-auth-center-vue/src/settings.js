@@ -1,6 +1,6 @@
 module.exports = {
 
-  title: '小强认证中心',
+  title: '浙江担保统一认证中心',
 
   /**
    * @type {boolean} true | false

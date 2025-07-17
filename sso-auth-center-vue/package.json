@@ -1,8 +1,8 @@
 {
   "name": "sso-auth-center-vue",
   "version": "4.4.0",
-  "description": "小强认证中心",
-  "author": "xqiang",
+  "description": "浙江担保统一认证中心",
+  "author": "zjdb",
   "scripts": {
     "dev": "vue-cli-service serve",
     "build-prod": "vue-cli-service build",

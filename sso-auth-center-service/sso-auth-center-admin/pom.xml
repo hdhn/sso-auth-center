@@ -55,7 +55,24 @@
             <groupId>com.sso</groupId>
             <artifactId>sso-business</artifactId>
         </dependency>
-
+        <!-- Spring Security LDAP 支持 -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-ldap</artifactId>
+            <version>5.1.6.RELEASE</version>
+        </dependency>
+        <!-- Spring LDAP 核心库 -->
+        <dependency>
+            <groupId>org.springframework.ldap</groupId>
+            <artifactId>spring-ldap-core</artifactId>
+            <version>2.3.3.RELEASE</version>
+        </dependency>
+        <!-- 可选：Spring Boot LDAP Starter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-ldap</artifactId>
+            <version>2.1.17.RELEASE</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -11,9 +11,11 @@ import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.HashSet;
 
 /**
  * 用户登录信息
@@ -162,8 +164,23 @@ public class LoginResultVO implements UserDetails {
 		return true;
 	}
 
+	@JsonIgnore
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return null;
+		Set<GrantedAuthority> authorities = new HashSet<>();
+		
+		// 添加角色权限
+		if (roleKeyList != null) {
+			roleKeyList.forEach(role -> 
+				authorities.add(new SimpleGrantedAuthority("ROLE_" + role)));
+		}
+		
+		// 添加其他权限
+		if (permissionList != null) {
+			permissionList.forEach(permission -> 
+				authorities.add(new SimpleGrantedAuthority(permission)));
+		}
+		
+		return authorities;
 	}
 }

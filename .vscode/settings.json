@@ -1,0 +1,7 @@
+{
+    "java.maven.downloadSources": false,
+    "java.configuration.maven.globalSettings": "E:\\apache-maven-3.6.1\\conf\\sdb-setting",
+    "java.configuration.maven.userSettings": "E:\\apache-maven-3.6.1\\conf\\sdb-setting",
+    "java.maven.updateSnapshots": true,
+    "java.compile.nullAnalysis.mode": "automatic",
+}

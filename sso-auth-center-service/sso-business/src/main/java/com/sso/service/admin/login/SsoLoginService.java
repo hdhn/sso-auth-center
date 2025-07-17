@@ -9,6 +9,7 @@ import com.sso.common.enums.LoginStatusEnum;
 import com.sso.common.enums.exception.SysResStatusEnum;
 import com.sso.common.exception.BusinessException;
 import com.sso.common.model.login.LoginResultVO;
+import com.sso.common.model.login.LoginUserVO;
 import com.sso.common.utils.ServletUtils;
 import com.sso.common.utils.StringUtils;
 import com.sso.common.utils.ip.IpAddressUtils;
@@ -27,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
@@ -164,8 +166,16 @@ public class SsoLoginService {
 		//用户验证
 		try {
 			UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(loginBO.getUsername(), loginBO.getPassword());
-			//该方法会去调用UserDetailsServiceImpl.loadUserByUsername
+			//该方法会去调用UserDetailsServiceImpl.loadUserByUsername  //数据库登录
+			//该方法会去调用CustomLdapUserDetailsMapper.mapUserFromContext  //ldap登录
 			Authentication authentication = authenticationManager.authenticate(authToken);
+//			UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+//
+//			LoginResultVO result = new LoginResultVO();
+//			LoginUserVO loginUser = new LoginUserVO();
+//			loginUser.setUsername(userDetails.getUsername());
+//			result.setUser(loginUser);
+//			return result;
 			return (LoginResultVO) authentication.getPrincipal();
 		} catch (Exception e) {
 			if (e instanceof UsernameNotFoundException || e instanceof BadCredentialsException) {

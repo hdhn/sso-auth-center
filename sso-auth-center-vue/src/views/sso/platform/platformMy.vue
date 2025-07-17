@@ -7,17 +7,23 @@
       </el-col>
     </el-row>
     <el-row>
-      <el-col v-for="(item, index) in platformList" :key="item.id" :span="-8" :offset="index > 0 ? 2 : 0"
-              class="bodyClass">
+      <el-col 
+        v-for="(item, index) in platformList" 
+        :key="item.id" 
+        :span="-8" 
+        :offset="index > 0 ? 2 : 0"
+        class="bodyClass"
+      >
         <el-card :body-style="{ padding: '0px' }" class="elCardClass">
           <img
-              :src="item.sysIcon"
-              class="image"
-              alt=""
-              @click="clickPlatform(item)">
+            :src="item.sysIcon"
+            class="image"
+            alt=""
+            @click="clickPlatform(item)"
+          >
           <div style="padding: 15px;" @click="clickPlatform(item)">
-            <span>{{ item.sysName }} <i style="float: right;border: none" class="el-icon-s-promotion"></i></span>
-            <span></span>
+            <span>{{ item.sysName }} <i style="float: right;border: none" class="el-icon-s-promotion" /></span>
+            <span />
           </div>
         </el-card>
       </el-col>
@@ -31,32 +37,30 @@
 <script>
 import { platformMyList } from '@/api/system'
 import { getToken } from '@/utils/token'
-import Sortable from 'sortablejs'
 import { isExternal } from '@/utils/validate'
 
 export default {
   inject: ['reloadLeftMenu'],
-  components: { Sortable },
   data() {
     return {
       list: [],
       sortOpen: true,
-      //遮罩层
+      // 遮罩层
       loading: true,
-      //查询参数
+      // 查询参数
       queryParams: {},
       platformList: []
     }
   },
   created() {
     const token = getToken()
-    //若存在跳转地址直接跳转
-    let redirectUrl = this.$route.query.redirectUrl
-    if (null != token && null !== redirectUrl && '' !== redirectUrl && redirectUrl !== undefined) {
+    // 若存在跳转地址直接跳转
+    const redirectUrl = this.$route.query.redirectUrl
+    if (token != null && redirectUrl !== null && redirectUrl !== '' && redirectUrl !== undefined) {
       window.location.href = redirectUrl + '?ssoToken=' + token
     }
 
-    //刷新左侧菜单栏
+    // 刷新左侧菜单栏
     this.reloadLeftMenu()
     this.getList()
   },
@@ -65,25 +69,25 @@ export default {
       this.loading = true
       this.platformList = []
       platformMyList(this.queryParams).then((response) => {
-            for (let key in response.data) {
-              const itemDate = response.data[key]
-              //处理图片地址
-              if (null == itemDate.sysIcon || '' === itemDate.sysIcon) {
-                itemDate.sysIcon = require('@/assets/image/default-system.jpg')
-              } else {
-                //系统图标-如果非外链则添加前缀处理
-                if (!isExternal(itemDate.sysIcon)) {
-                  itemDate.sysIcon = process.env.VUE_APP_BASE_API + itemDate.sysIcon
-                }
-              }
-              this.platformList.push(itemDate)
+        for (const key in response.data) {
+          const itemDate = response.data[key]
+          // 处理图片地址
+          if (itemDate.sysIcon == null || itemDate.sysIcon === '') {
+            itemDate.sysIcon = require('@/assets/image/default-system.jpg')
+          } else {
+            // 系统图标-如果非外链则添加前缀处理
+            if (!isExternal(itemDate.sysIcon)) {
+              itemDate.sysIcon = process.env.VUE_APP_BASE_API + itemDate.sysIcon
             }
-            this.loading = false
           }
-      )
+          // itemDate.sysIcon = require('@/assets/image/default-system.jpg')
+          this.platformList.push(itemDate)
+        }
+        this.loading = false
+      })
     },
     clickPlatform(item) {
-      if (null !== item.sysUrl && '' !== item.sysUrl && item.sysUrl !== undefined) {
+      if (item.sysUrl !== null && item.sysUrl !== '' && item.sysUrl !== undefined) {
         window.open(item.sysUrl + '?ssoToken=' + getToken())
       } else {
         this.msgError('目标系统跳转链接为空,请联系管理员配置')
@@ -101,9 +105,7 @@ export default {
 }
 </script>
 
-
 <style scoped>
-
 .bodyClass {
   padding: 0px;
   width: 245px;
@@ -124,5 +126,4 @@ export default {
   height: 150px;
   display: block;
 }
-
 </style>

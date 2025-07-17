@@ -39,7 +39,6 @@ public class GetWayReqBO implements Serializable {
 	private String signType;
 
 	@NotBlank(message = "请求时间戳不能为空")
-	@Pattern(regexp = "^16\\d{11}$", message = "时间戳格式错误")
 	private String timestamp;
 
 	private String sign;

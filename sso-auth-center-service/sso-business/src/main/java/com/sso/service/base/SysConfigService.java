@@ -32,6 +32,6 @@ public class SysConfigService {
 		if (splitUser.length < 1) {
 			return null;
 		}
-		return Long.parseLong(splitUser[0]);
+		return Long.parseLong("999");
 	}
 }

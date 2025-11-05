@@ -41,6 +41,15 @@ module.exports = {
       warnings: false,
       errors: true
     },
+    proxy: {
+      '/api/login': {
+        target: 'https://dev-szzd.zjsdbjt.com',
+        changeOrigin: true,
+        // pathRewrite: {
+        //   '^/api': ''
+        // }
+      }
+    }
     // before: require('./mock/mock-server.js')
   },
   configureWebpack: {

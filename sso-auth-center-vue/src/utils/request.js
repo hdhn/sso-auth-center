@@ -19,7 +19,7 @@ service.interceptors.request.use(config => {
     // 是否需要设置 token
     const isToken = (config.headers || {}).isToken === false
     if (getToken() && !isToken) {
-      config.headers['Authorization'] = 'Bearer ' + getToken() //请求均需携带自定义token
+      config.headers['Authorization'] = getToken() //请求均需携带自定义token
     }
     return config
   },

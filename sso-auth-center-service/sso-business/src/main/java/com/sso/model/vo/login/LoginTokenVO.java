@@ -2,6 +2,7 @@ package com.sso.model.vo.login;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 /**
@@ -19,6 +20,11 @@ public class LoginTokenVO implements Serializable {
 	private String username;
 
 	/**
+	 * 用户密码
+	 */
+	private String password;
+
+	/**
 	 * 请求标识
 	 */
 	private String requestId;
@@ -28,10 +34,11 @@ public class LoginTokenVO implements Serializable {
 	 */
 	private String token;
 
-	public LoginTokenVO(String username, String requestId, String token) {
+	public LoginTokenVO(String username, String requestId, String token,String password) {
 		this.username = username;
 		this.requestId = requestId;
 		this.token = token;
+		this.password = password;
 	}
 
 }

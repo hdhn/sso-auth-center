@@ -1,10 +1,11 @@
 import { getUserInfo, login, logout } from '@/api/login'
-import { getToken, removeToken, setToken } from '@/utils/token'
+import { getToken, removeToken, setToken, setUsername, getUsername } from '@/utils/token'
 import { isExternal } from '@/utils/validate'
 
 const getDefaultState = () => {
   return {
     token: getToken(),
+    username: getUsername(),
     name: '',
     avatar: '',
     roles: null,
@@ -23,6 +24,9 @@ const mutations = {
   // },
   SET_TOKEN: (state, token) => {
     state.token = token
+  },
+  SET_USERNAME: (state, username) => {
+    state.username = username
   },
   SET_NAME: (state, name) => {
     state.name = name
@@ -53,8 +57,10 @@ const actions = {
     const requestId = userInfo.requestId
     return new Promise((resolve, reject) => {
       login(username, password, captchaCode, requestId).then(res => {
-        setToken(res.data.token)
+        setToken('Bearer '+res.data.token)
+        setUsername(res.data.username)
         commit('SET_TOKEN', res.data.token)
+        commit('SET_USERNAME', res.data.username)
         resolve()
       }).catch(error => {
         reject(error)

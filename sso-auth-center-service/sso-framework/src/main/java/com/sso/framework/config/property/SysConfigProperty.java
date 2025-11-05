@@ -34,6 +34,11 @@ public class SysConfigProperty {
 	private String tokenSecret;
 
 	/**
+	 * 令牌秘钥
+	 */
+	private String jwtSecret;
+
+	/**
 	 * 认证中心系统编码
 	 */
 	private String authSsoSysCode;
@@ -80,6 +85,12 @@ public class SysConfigProperty {
 
 	public String getTokenSecret() {
 		return tokenSecret;
+	}
+	public void setJwtSecret(String jwtSecret) {
+		this.jwtSecret = jwtSecret;
+	}
+	public String getJwtSecret() {
+		return jwtSecret;
 	}
 
 	public void setTokenSecret(String tokenSecret) {

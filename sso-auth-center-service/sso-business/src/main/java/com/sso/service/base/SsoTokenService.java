@@ -12,7 +12,6 @@ import com.sso.common.model.login.LoginResultVO;
 import com.sso.common.utils.ObjectUtils;
 import com.sso.common.utils.ServletUtils;
 import com.sso.common.utils.StringUtils;
-import com.sso.common.utils.UUIDUtil;
 import com.sso.common.utils.ip.IpAddressUtils;
 import com.sso.common.utils.ip.IpUtils;
 import com.sso.dao.mapper.SsoOnlineUserMapper;
@@ -20,16 +19,23 @@ import com.sso.framework.config.property.SysConfigProperty;
 import com.sso.framework.redis.RedisCache;
 import com.sso.model.vo.getway.SysLoginCacheVO;
 import eu.bitwalker.useragentutils.UserAgent;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
+import java.security.Key;
+import java.util.Base64;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-
 /**
  * token验证处理
  *
@@ -42,6 +48,17 @@ public class SsoTokenService {
 	protected static final long MILLIS_MINUTE = 60 * MILLIS_SECOND;
 	private static final Long MILLIS_MINUTE_TEN = 20 * 60 * 1000L;
 
+	// 令牌过期时间 此处单位/毫秒 ，默认4小时,由于历史代码实现方式特殊改造设置为24小时
+	private static final Long tokenSeconds = (long) (14400000 * 6);
+	private SecretKey key;
+
+	@PostConstruct
+	public void init() {
+//		String jwtSecret = sysConfigProperty.getJwtSecret();
+//		this.key = new SecretKeySpec(jwtSecret.getBytes(), SignatureAlgorithm.HS256.getJcaName());
+		byte[] keyBytes = Base64.getDecoder().decode(sysConfigProperty.getJwtSecret());
+		this.key = new SecretKeySpec(keyBytes, SignatureAlgorithm.HS256.getJcaName());
+	}
 	@Autowired
 	private RedisCache redisCache;
 
@@ -168,7 +185,8 @@ public class SsoTokenService {
 	 * @return 令牌
 	 */
 	public String createToken(LoginResultVO loginResultVO) {
-		String token = UUIDUtil.getUUID();
+//		String token = UUIDUtil.getUUID();
+		String token = createTokenNoAuth(loginResultVO);
 		loginResultVO.setToken(token);
 		this.setUserAgent(loginResultVO);
 		//创建token
@@ -176,6 +194,17 @@ public class SsoTokenService {
 		return token;
 	}
 
+	public String createTokenNoAuth(LoginResultVO loginResultVO) {
+		long now = (new Date()).getTime();
+		Date validity = new Date(now + tokenSeconds);
+
+		return Jwts.builder()
+				.setSubject(loginResultVO.getUsername())
+				//.claim(AUTHORITIES_KEY, authorities)
+				.signWith(SignatureAlgorithm.HS256, key)
+				.setExpiration(validity)
+				.compact();
+	}
 	/**
 	 * 验证令牌有效期，
 	 * 相差不足20分钟，自动刷新 token续期

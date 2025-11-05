@@ -6,12 +6,16 @@ package com.sso.controller.admin;
 
 
 import com.sso.common.model.result.ResultModel;
+import com.sso.common.utils.StringUtils;
+import com.sso.framework.redis.RedisCache;
 import com.sso.model.bo.login.LoginBO;
 import com.sso.model.vo.login.LoginTokenVO;
 import com.sso.model.vo.login.LoginUserInfoVO;
 import com.sso.service.admin.login.SsoLoginService;
 import com.sso.service.admin.login.SysPermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +30,9 @@ import javax.validation.Valid;
  */
 @RestController
 public class LoginController {
+
+	@Autowired
+	private RedisCache redisCache;
 
 	@Autowired
 	private SsoLoginService ssoLoginService;
@@ -53,5 +60,16 @@ public class LoginController {
 	public ResultModel<?> getInfo() {
 		LoginUserInfoVO userInfo = permissionService.getLoginUserInfo();
 		return ResultModel.success(userInfo);
+	}
+
+//    @PostMapping(value = "/phone")
+//    public SystemResult<String> loginMode( @RequestBody LoginDto loginDto, HttpServletRequest request) {
+//        return SystemResult.success(loginService.loginMode(loginDto, request));
+//    }
+
+	//通过登陆信息获取手机验证码
+	@GetMapping(value = "/login/phone/code")
+	public ResultModel<Boolean> getPhoneModeCode(String username) {
+		return ResultModel.success(ssoLoginService.getPhoneModeCode(username));
 	}
 }

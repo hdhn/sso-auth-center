@@ -38,3 +38,12 @@ export function getCaptchaImage() {
     method: 'get'
   })
 }
+
+// 获取手机验证码
+export function loginPhoneCode(params) {
+  return request({
+    url: '/login/phone/code',
+    method: 'get',
+    params
+  })
+}

@@ -4,6 +4,9 @@
       <div class="title-container">
         <h3 class="title">{{ title }}</h3>
       </div>
+      <el-link type="primary" @click="changeLoginType">
+        {{ captchaOnOff ? '图形验证码登录' : '短信验证码登录' }}
+      </el-link>
       <el-form-item prop="username">
         <el-input v-model="loginForm.username" type="text" auto-complete="off" placeholder="账号">
           <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon"/>
@@ -28,8 +31,9 @@
         >
           <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon"/>
         </el-input>
-        <div class="login-code">
-          <img :src="captchaImageUrl" @click="getCaptchaImageUrl" class="login-code-img"/>
+        <div  class="login-code">
+          <img v-if="!captchaOnOff" :src="captchaImageUrl" @click="getCaptchaImageUrl" class="login-code-img"/>
+          <el-button :disabled="countdown > 0"  v-else @click="getPhoneCode">{{ countdown > 0 ? `${countdown}s后重试` : '获取验证码' }}</el-button>
         </div>
       </el-form-item>
       <el-checkbox v-model="loginForm.rememberMe" style="margin:0px 0px 25px 0px;">记住密码</el-checkbox>
@@ -55,7 +59,7 @@
 <script>
 import Cookies from 'js-cookie'
 import { getToken } from '@/utils/token'
-import { getCaptchaImage } from '@/api/login'
+import { getCaptchaImage,loginPhoneCode } from '@/api/login'
 import { encrypt, decrypt } from '@/utils/rsaencrypt'
 
 export default {
@@ -85,7 +89,10 @@ export default {
       },
       loading: false,
       passwordType: 'password',
-      redirect: undefined
+      redirect: undefined,
+      captchaOnOff: true,
+      countdown: 0, // 倒计时秒数
+      timer: null
     }
   },
   watch: {
@@ -100,8 +107,29 @@ export default {
     this.getCaptchaImageUrl()
     this.getCookie()
   },
+  beforeDestroy() {
+    if (this.timer) clearInterval(this.timer)
+  },
   methods: {
-    //获取验证码
+    getPhoneCode() {
+      loginPhoneCode({ username: this.loginForm.username, password: this.loginForm.password }).then(res=>{
+              // 启动倒计时
+      this.countdown = 60
+      this.timer = setInterval(() => {
+        if (this.countdown > 0) {
+          this.countdown--
+        } else {
+          clearInterval(this.timer)
+          this.timer = null
+        }
+      }, 1000)
+      })
+
+    },
+    changeLoginType() {
+      this.captchaOnOff = !this.captchaOnOff
+    },
+    // 获取验证码
     getCaptchaImageUrl() {
       getCaptchaImage().then(res => {
         this.captchaImageUrl = 'data:image/gif;base64,' + res.data.base64Img
@@ -173,7 +201,7 @@ export default {
 /* reset element-ui css */
 .login-container {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   height: 100%;
   background-image: url("../../assets/image/login-background.jpg");
@@ -191,7 +219,7 @@ export default {
   background: #ffffff;
   width: 400px;
   padding: 25px 25px 5px 25px;
-
+  margin-right: 20%;
   .el-input {
     height: 38px;
 

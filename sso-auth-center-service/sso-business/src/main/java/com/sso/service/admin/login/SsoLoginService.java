@@ -4,6 +4,8 @@
  */
 package com.sso.service.admin.login;
 
+import ch.qos.logback.core.Context;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sso.common.constant.CacheConstants;
 import com.sso.common.enums.LoginStatusEnum;
 import com.sso.common.enums.exception.SysResStatusEnum;
@@ -14,8 +16,10 @@ import com.sso.common.utils.ServletUtils;
 import com.sso.common.utils.StringUtils;
 import com.sso.common.utils.ip.IpAddressUtils;
 import com.sso.common.utils.ip.IpUtils;
+import com.sso.common.utils.sms.SmsServiceMas;
 import com.sso.dao.entity.SsoLoginLog;
 import com.sso.dao.entity.SsoOnlineUser;
+import com.sso.dao.entity.SsoUser;
 import com.sso.dao.mapper.SsoLoginLogMapper;
 import com.sso.dao.mapper.SsoOnlineUserMapper;
 import com.sso.dao.mapper.SsoUserMapper;
@@ -34,6 +38,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 登录校验方法
@@ -49,7 +54,6 @@ public class SsoLoginService {
 
 	@Resource
 	private SsoUserMapper ssoUserMapper;
-
 	@Resource
 	private SsoTokenService tokenService;
 
@@ -91,7 +95,7 @@ public class SsoLoginService {
 		//记录在线用户记录
 		this.doSaveOnlineUserRecord(loginResult);
 
-		return new LoginTokenVO(loginBO.getUsername(), loginBO.getRequestId(), token);
+		return new LoginTokenVO(loginBO.getUsername(), loginBO.getRequestId(), token,loginBO.getPassword());
 	}
 
 	/**
@@ -214,19 +218,50 @@ public class SsoLoginService {
 	private void checkCaptcha(LoginBO loginBO) {
 		String verifyKey = CacheConstants.getCaptchaCodeKey(loginBO.getRequestId());
 		String captcha = redisCache.get(verifyKey);
+		String key = String.format("key_phoneNumber_%s", loginBO.getUsername());
+		String onlineCode = redisCache.get(key);
 		//验证码已失效
-		if (captcha == null) {
+		if (captcha == null && StringUtils.isBlank(onlineCode)) {
 			//记录登录日志
 			this.doAddLoginFailLog(loginBO, SysResStatusEnum.CAPTCHA_EXPIRE.getMsg());
 			throw new BusinessException(SysResStatusEnum.CAPTCHA_EXPIRE);
 		}
 		//仅一次有效，使用后作废
 		redisCache.del(verifyKey);
+		redisCache.del(key);
 		//验证码错误
-		if (!loginBO.getCaptchaCode().equalsIgnoreCase(captcha)) {
+		if (!loginBO.getCaptchaCode().equalsIgnoreCase(captcha) && !loginBO.getCaptchaCode().equalsIgnoreCase(onlineCode)) {
 			//记录登录日志
 			this.doAddLoginFailLog(loginBO, SysResStatusEnum.CAPTCHA_ERROR.getMsg());
 			throw new BusinessException(SysResStatusEnum.CAPTCHA_ERROR);
 		}
+	}
+
+	public Boolean getPhoneModeCode(String username) {
+		if (username.length() >= 4 && username.length() <= 11) {
+			SsoUser ssoUser;
+			if(username.length() <= 10){
+				ssoUser = ssoUserMapper.getByUserName(username);
+			}else {
+				ssoUser = ssoUserMapper.getByPhone(username);
+			}
+			if (null == ssoUser) {
+				return null;
+			}
+			String phone = ssoUser.getPhone();
+			String key = String.format("key_phoneNumber_%s", username);
+//			if (redisCache.exists(key)) {
+//				throw new BusinessException("当前手机号已获取验证码请在1分钟后在获取");
+//			}
+			int ran = (int) ((Math.random() * 9 + 1) * 100000);
+			String result = String.valueOf(ran);
+			JsonNode jsonNode = SmsServiceMas.templateMsg("http://10.20.0.56/sms/tmpsubmit", phone, "b8eee9f47462450b9fe6fd81aa98c647", new String[]{result});
+			if ("true".equals(jsonNode.get("success").toString())) {
+				redisCache.del(key);
+				redisCache.set(key, result, CacheConstants.CAPTCHA_EXPIRE, TimeUnit.MINUTES);
+			}
+			return true;
+		}
+		throw new BusinessException("账号长度支持4-11位");
 	}
 }

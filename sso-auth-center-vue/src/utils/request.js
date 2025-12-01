@@ -7,9 +7,15 @@ import errorCode from '@/utils/errorCode'
 axios.defaults.headers['Content-Type'] = 'application/json;charset=utf-8'
 
 // 创建axios实例
+// 开发环境下使用相对路径，以便走webpack代理
+// 生产环境直接使用环境变量，不做任何处理（环境变量应该已经包含完整路径）
+const baseURL = process.env.NODE_ENV === 'development' 
+  ? '/api' // 开发环境使用相对路径
+  : (process.env.VUE_APP_BASE_API || '/api')
+
 const service = axios.create({
   // axios中请求配置有baseURL选项，表示请求URL公共部分
-  baseURL: process.env.VUE_APP_BASE_API,
+  baseURL: baseURL,
   // 请求超时时间 withCredentials: true,
   timeout: 10000
 })

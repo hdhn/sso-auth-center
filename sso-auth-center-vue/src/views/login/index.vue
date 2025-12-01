@@ -7,6 +7,7 @@
       <el-link type="primary" @click="changeLoginType">
         {{ captchaOnOff ? '图形验证码登录' : '短信验证码登录' }}
       </el-link>
+      <WechatLogin :afterLogin="afterLogin"></WechatLogin>
       <el-form-item prop="username">
         <el-input v-model="loginForm.username" type="text" auto-complete="off" placeholder="账号">
           <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon"/>
@@ -61,9 +62,12 @@ import Cookies from 'js-cookie'
 import { getToken } from '@/utils/token'
 import { getCaptchaImage,loginPhoneCode } from '@/api/login'
 import { encrypt, decrypt } from '@/utils/rsaencrypt'
-
+import WechatLogin from './components/WechatLogin'
 export default {
   name: 'Login',
+  components: {
+    WechatLogin,
+  },
   data() {
     const validatePassword = (rule, value, callback) => {
       if (value.length < 6) {
@@ -183,6 +187,9 @@ export default {
           })
         }
       })
+    },
+    afterLogin() {
+      this.handleLogin()
     }
   }
 }
@@ -215,6 +222,7 @@ export default {
 }
 
 .login-form {
+  position: relative;
   border-radius: 6px;
   background: #ffffff;
   width: 400px;
